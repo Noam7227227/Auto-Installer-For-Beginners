@@ -115,42 +115,35 @@ def research_installer(state: AgentState):
         
     return {"installation_guides": guides}
 
+
 def software_installer_node(state: AgentState):
     """
     Assistant node: decides which tool to call next based on the conversation so far.
     On the first turn it seeds the conversation with the system prompt and the
     install list; on later turns it just continues from the running message history.
     """
-    messages = state.get("messages", [])
+    software_list = state.get("to_install", []) or state.get("software_list", [])
+    
+    guides_str = str(state.get("installation_guides", {}))
+    software_str = ", ".join(software_list)
 
-    if not messages:
-        software_list = state.get("to_install", []) or state.get("software_list", [])
-        
-        guides_str = str(state.get("installation_guides", {}))
-        software_str = ", ".join(software_list)
+    system_content = INSTALLER_SYSTEM_PROMPT.replace(
+        "{to_install}", software_str
+    ).replace(
+        "{installation_guides}", guides_str
+    )
 
-        system_content = INSTALLER_SYSTEM_PROMPT.replace(
-            "{to_install}", software_str
-        ).replace(
-            "{installation_guides}", guides_str
-        )
-
-        seed = [
-            SystemMessage(content=system_content),
-            HumanMessage(
-                content=(
-                    "Please install the following software, one at a time, using the tools: "
-                    f"{', '.join(software_list)}."
-                )
-            ),
-        ]
-        response = llm_with_tools.invoke(seed)
-        return {"messages": seed + [response]}
-
-    response = llm_with_tools.invoke(messages)
-    return {"messages": [response]}
-
-
+    seed = [
+        SystemMessage(content=system_content),
+        HumanMessage(
+            content=(
+                "Please install the following software, one at a time, using the tools: "
+                f"{', '.join(software_list)}."
+            )
+        ),
+    ]
+    response = llm_with_tools.invoke(seed)
+    return {"messages": seed + [response]}
 
     
 def _get_content(m) -> str:

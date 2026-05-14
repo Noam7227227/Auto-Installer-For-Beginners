@@ -68,6 +68,6 @@ class AgentState(TypedDict):
     chosen_main_app: Optional[str]
     side_tools: Optional[list]
     web_options: Optional[list]
-    installation_messages: Optional[list]
+    installation_messages: Annotated[list, add_messages]
     installation_guides: Dict[str, str]
     installation_urls: Dict[str, str]
