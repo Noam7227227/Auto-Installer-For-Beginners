@@ -68,7 +68,7 @@ def download_link_search(software_name: str) -> str:
             top_url = search_result["results"][0]["url"]
             print(f"[FOUND] Best available link: {top_url}")
 
-            return installation_url
+            return top_url
             
         print(f"[NOT FOUND] No reliable links found for {software_name}.")
         return f"Error: Could not find an official download link for {software_name}."
@@ -111,7 +111,6 @@ def choco_command_search(software_name: str) -> str:
         print(f"[ERROR] Tavily search failed: {e}")
         return f"Error: Search failed for {software_name}."
 
-
 def research_installer_tool(software_name: str) -> str:
     """
     Uses Tavily to research the installation process for a given software.
@@ -144,6 +143,10 @@ def research_installer_tool(software_name: str) -> str:
     except Exception as e:
         print(f"[ERROR] Tavily search failed: {e}")
         return f"Error: Search failed for installation instructions of {software_name}."
+
+
+
+
 
 tools = [
     {
