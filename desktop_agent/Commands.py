@@ -6,28 +6,29 @@ import re
 import winreg
 import ctypes
 
-def handleDownloadFileCommand(URL, save_path):
+def handleDownloadFileCommand(args):
+    URL = args.get("URL")
+    save_path = args.get("save_path")
     try:
-        # Ensure the directory exists before downloading
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
         # Stream=True allows us to download in chunks
         with requests.get(URL, stream=True, timeout=30) as r:
             r.raise_for_status() # Check if the URL is valid/accessible
             
             with open(save_path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
-                    if chunk: 
+                    if chunk:
                         f.write(chunk)
                         
         logging.info(f"Successfully downloaded to: {save_path}")
         return True
 
     except Exception as e:
-        logging.error(f"Failed to download {URL}: {e}")
+        logging.error(f"Failed to download {URL} to {save_path}: {e}")
         return False
 
-def handleRunProcess(command, outputValidator):
+def handleRunProcess(args):
+    command = args.get("Command")
+    outputValidator = args.get("OutputValidator")
     try:
         # Run the command and capture both stdout and stderr
         result = subprocess.run(command, 
@@ -56,15 +57,14 @@ def handleRunProcess(command, outputValidator):
         logging.error(f"Execution failed: {e.stderr}")
         return False
 
-def handleAddToPath(new_path: str):
+def handleAddToPath(args):
     """
     Add a directory to the Windows SYSTEM PATH environment variable
     using direct registry access.
 
     Requires administrator privileges.
     """
-
-    new_path = os.path.abspath(new_path)
+    new_path = os.path.abspath(args.get("Path"))
 
     reg_key = r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
 
@@ -126,4 +126,3 @@ def handleAddToPath(new_path: str):
     )
 
     logging.info(f"Added to SYSTEM PATH: {new_path}")
-

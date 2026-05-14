@@ -1,0 +1,16 @@
+2026-05-14 20:21:34,493 - INFO - Received message for recipe: pasten
+2026-05-14 20:21:34,497 - INFO - Executing step of type: DownloadFile
+2026-05-14 20:21:34,497 - INFO - os.path.dirname(save_path): 
+2026-05-14 20:21:34,497 - ERROR - Failed to download https://nssm.cc/release/nssm-2.24.zip to pasten.zip: [WinError 3] The system cannot find the path specified: ''
+2026-05-14 20:21:34,497 - ERROR - Step of type DownloadFile failed. Aborting recipe execution.
+2026-05-14 20:24:08,016 - INFO - Received message for recipe: pasten
+2026-05-14 20:24:08,019 - INFO - Executing step of type: DownloadFile
+2026-05-14 20:24:08,881 - ERROR - Failed to download https://nssm.cc/release/nssm-2.24.zip to pasten.zip: 503 Server Error: Service Temporarily Unavailable for url: https://nssm.cc/release/nssm-2.24.zip
+2026-05-14 20:24:08,881 - ERROR - Step of type DownloadFile failed. Aborting recipe execution.
+2026-05-14 20:24:40,137 - INFO - Received message for recipe: pasten
+2026-05-14 20:24:40,138 - INFO - Executing step of type: DownloadFile
+2026-05-14 20:24:40,815 - ERROR - Failed to download https://nssm.cc/release/nssm-2.24.zip to pasten.zip: 503 Server Error: Service Temporarily Unavailable for url: https://nssm.cc/release/nssm-2.24.zip
+2026-05-14 20:24:40,815 - ERROR - Step of type DownloadFile failed. Aborting recipe execution.
+2026-05-14 20:25:30,875 - INFO - Received message for recipe: pasten
+2026-05-14 20:25:30,876 - INFO - Executing step of type: DownloadFile
+2026-05-14 20:25:32,592 - INFO - Successfully downloaded to: pasten.zip
