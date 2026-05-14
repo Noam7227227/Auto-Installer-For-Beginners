@@ -54,7 +54,7 @@ TOOLS AVAILABLE:
 INSTRUCTIONS:
 1. Review the `installation_guides` provided in the state for each software.
 2. DECIDE the path based on the guide:
-   - IF THE GUIDE SAYS "USE A COMMAND" (e.g., pip, npm, winget):
+   - IF THE GUIDE SAYS "USE A COMMAND" (e.g., pip, npm, winget) or use Chocolatey:
      * Call `execute_system_command` immediately with the suggested command.
    - IF THE GUIDE SAYS "DOWNLOAD AND RUN":
      * Call `download_link_search` to find the official link.
@@ -98,10 +98,10 @@ def research_installer(state: AgentState):
         
         # 2. Use the LLM to summarize the raw links into a clean instruction
         prompt = (
-            f"I found the following information for installing {software} on Windows:\n"
+            f"I found the following information for installing {software} on Windows with Chocolatey:\n"
             f"{raw_results}\n\n"
             "Please summarize this into a clear, 1-2 sentence installation guide. "
-            "Tell me if I should use a download link or a command like 'pip' or 'npm'."
+            "Tell me if I should search for a chocolatey package command or a command like 'pip' or 'npm'."
         )
         
         # We invoke the LLM normally (no tools needed) to process the search text

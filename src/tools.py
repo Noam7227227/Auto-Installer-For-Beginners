@@ -1,7 +1,3 @@
-from urllib.parse import urljoin
-
-from bs4 import BeautifulSoup
-import requests
 from tavily import TavilyClient
 import os
 from dotenv import load_dotenv
@@ -119,13 +115,15 @@ def choco_command_search(software_name: str) -> str:
 def research_installer_tool(software_name: str) -> str:
     """
     Uses Tavily to research the installation process for a given software.
+    If the softawre can be downloaded using bash commands (e.g pip, npm, winget), this is the best option.
+    Otherwise suggest using chocolatey if a command is available. Do not suggest downloading an installer directly.
     
     Args:
         software_name: The name of the software to research (e.g., 'Git', 'Python 3.12', 'VS Code')
     """
     print(f"[RESEARCHING] Finding installation instructions for: {software_name}...")
     
-    query = f"how to install {software_name} on Windows"
+    query = f"how to install {software_name} on Windows using command line tools or chocolatey?"
     
     try:
         search_result = _tavily.search(query=query, search_depth="advanced", max_results=5)

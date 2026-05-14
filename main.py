@@ -5,7 +5,7 @@ def main():
     app = build_graph()
 
     initial_state = {
-        "task" : "download Canva",
+        "task" : "dowanload canvas, python 3.12, and git",
         "to_install": [],
         "installation_guides": {},
         "messages": [],
