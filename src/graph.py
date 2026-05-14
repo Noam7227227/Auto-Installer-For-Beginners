@@ -53,7 +53,7 @@ def build_graph():
 
     workflow.add_edge("human_input",               "interpreter")
     workflow.add_edge("suggest_main_apps",         "human_picks_main")
-    workflow.add_edge("finalize_consumption",      END)
+    workflow.add_edge("finalize_consumption",      "download_researcher")
     workflow.add_edge("suggest_side_tools",        "human_confirms_side_tools")
     workflow.add_edge("human_confirms_side_tools", "download_researcher")
     workflow.add_edge("download_researcher", "installer")
