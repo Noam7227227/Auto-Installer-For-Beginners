@@ -1,13 +1,9 @@
 from tavily import TavilyClient
 import os
-import json
 from dotenv import load_dotenv
-from multiprocessing.connection import Client
 
 load_dotenv()
 _tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
-
-address = ('localhost', 21973)
 
 def execute_system_command(command: str) -> str:
     """
@@ -16,22 +12,8 @@ def execute_system_command(command: str) -> str:
     Args:
         command: The full string of the command to be executed (e.g., 'ls -la' or 'dir').
     """
-    print(f"Running command: {command}")
-    conn = Client(address)
-    try:
-        conn.send(json.dumps(
-            {
-                "type": "RunProcess",
-                "Command": command,
-                "OutputValidator": None
-            }
-        ))
-        res = conn.recv()
-        return f"Success: Command '{command}' executed with output: {res}"
-    except Exception as e:
-        return f"Error: Failed to execute command '{command}'."
-    finally:
-        conn.close()
+    print(f"[MOCK EXECUTION] Running command: {command}")
+    return f"Success: Command '{command}' executed (Mock)."
 
 def set_env_variable(key: str, value: str) -> str:
     """
@@ -166,6 +148,8 @@ def research_installer_tool(software_name: str) -> str:
 
 
 
+
+
 tools = [
     {
         "name": "execute_system_command",
@@ -179,41 +163,6 @@ tools = [
         }
     },
     {
-        "name": "set_env_variable",
-        "description": "Creates or updates an environment variable.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "key": {"type": "string", "description": "The variable name."},
-                "value": {"type": "string", "description": "The variable value."}
-            },
-            "required": ["key", "value"]
-        }
-    },
-    {
-        "name": "download_from_link",
-        "description": "Downloads a program or file from a URL to a local destination.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "url": {"type": "string", "description": "The source URL."},
-                "destination_path": {"type": "string", "description": "The local path to save the file."}
-            },
-            "required": ["url", "destination_path"]
-        }
-    },
-    {
-        "name": "download_link_search",
-        "description": "Searches the internet to find download links, documentation, or software information.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "software_name": {"type": "string", "description": "The name of the software to search for."}
-            },
-            "required": ["software_name"]
-        }
-    },
-    {
         "name": "choco_command_search",
         "description": "Searches for Chocolatey package commands to install software.",
         "parameters": {
@@ -223,7 +172,7 @@ tools = [
             },
             "required": ["software_name"]
         }
-    }
+    },
 ]
 
 tools_names = [tool["name"] for tool in tools]

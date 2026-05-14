@@ -1,0 +1,115 @@
+2026-05-15 01:48:39,081 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:39,082 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:39,199 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:40,163 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:40,163 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:40,238 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:41,273 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:41,273 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:41,287 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:42,386 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:42,386 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:42,401 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:43,477 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:43,477 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:43,499 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:44,644 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:44,644 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:44,667 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:45,783 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:45,783 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:45,807 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:47,047 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:47,047 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:47,062 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:48:48,296 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:48:48,297 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:48:48,309 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:23,834 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:23,838 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:23,871 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:24,899 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:24,899 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:24,929 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:26,033 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:26,033 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:26,059 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:27,136 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:27,136 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:27,160 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:28,231 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:28,231 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:28,245 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:29,315 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:29,315 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:29,328 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:30,432 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:30,432 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:30,442 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:31,559 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:31,559 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:31,576 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:32,632 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:32,632 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:32,645 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:33,716 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:33,716 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:33,738 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:34,861 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:34,862 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:34,889 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:36,105 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:36,105 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:36,123 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:37,207 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:37,207 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:37,219 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+
+2026-05-15 01:56:38,289 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community", "OutputValidator": null}
+2026-05-15 01:56:38,289 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community', 'OutputValidator': None}
+2026-05-15 01:56:38,302 - ERROR - Execution failed: 'choco' is not recognized as an internal or external command,
+operable program or batch file.
+

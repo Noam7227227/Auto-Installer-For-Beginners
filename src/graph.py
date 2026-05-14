@@ -23,8 +23,6 @@ def route_after_picking_main(state: AgentState) -> str:
     return "finalize_consumption" if state.get("task_type") == "consumption" else "suggest_side_tools"
 
 
-
-
 def build_graph():
     workflow = StateGraph(AgentState)
 
