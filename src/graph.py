@@ -1,17 +1,47 @@
 from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode, tools_condition
 
-from src.nodes import installments_filler
+from src.nodes import install_filler, software_installer_node, lc_tools
 from src.state import AgentState
 
-workflow = StateGraph(AgentState)
 
-workflow.add_node("installments_filler", installments_filler)
+def build_graph():
+    workflow = StateGraph(AgentState)
+    workflow.add_node("installer_filler", install_filler)
+    workflow.add_node("installer", software_installer_node)
+    workflow.add_node("tools", ToolNode(lc_tools))
 
-workflow.set_entry_point("installments_filler")
-workflow.add_edge("installments_filler", END)
+    workflow.set_entry_point("installer_filler")
+    workflow.add_edge("installer_filler", "installer")
+    workflow.add_conditional_edges("installer", tools_condition)
+    workflow.add_edge("tools", "installer")
 
-app = workflow.compile()
-input = {"task": "I want to set up a Python development environment on my new laptop."}
-result = app.invoke(input)
+    return workflow.compile()
 
-print(result["to_install"])
+
+def _print_event(event: dict):
+    """Pretty-print streaming updates from the graph, including state changes."""
+    for node_name, node_update in event.items():
+        print(f"\n--- Node: {node_name} ---")
+        
+        # 1. Print state updates (excluding messages for now)
+        if isinstance(node_update, dict):
+            for key, value in node_update.items():
+                if key != "messages":
+                    print(f"[State Update] {key}: {value}")
+
+        # 2. Print messages (AI thoughts and Tool outputs)
+        msgs = node_update.get("messages", []) if isinstance(node_update, dict) else []
+        for msg in msgs:
+            mtype = type(msg).__name__
+
+            if mtype == "AIMessage":
+                if getattr(msg, "tool_calls", None):
+                    for tc in msg.tool_calls:
+                        print(f"[AI -> tool] {tc['name']}({tc['args']})")
+                if msg.content:
+                    print(f"[AI says] {msg.content}")
+
+            elif mtype == "ToolMessage":
+                print(f"[Tool '{msg.name}' returned] {msg.content}")
+
