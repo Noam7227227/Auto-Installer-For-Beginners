@@ -1,9 +1,13 @@
 from tavily import TavilyClient
 import os
+import json
 from dotenv import load_dotenv
+from multiprocessing.connection import Client
 
 load_dotenv()
 _tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
+
+address = ('localhost', 21973)
 
 def execute_system_command(command: str) -> str:
     """
@@ -12,8 +16,22 @@ def execute_system_command(command: str) -> str:
     Args:
         command: The full string of the command to be executed (e.g., 'ls -la' or 'dir').
     """
-    print(f"[MOCK EXECUTION] Running command: {command}")
-    return f"Success: Command '{command}' executed (Mock)."
+    print(f"Running command: {command}")
+    conn = Client(address)
+    try:
+        conn.send(json.dumps(
+            {
+                "type": "RunProcess",
+                "Command": command,
+                "OutputValidator": None
+            }
+        ))
+        res = conn.recv()
+        return f"Success: Command '{command}' executed with output: {res}"
+    except Exception as e:
+        return f"Error: Failed to execute command '{command}'."
+    finally:
+        conn.close()
 
 def set_env_variable(key: str, value: str) -> str:
     """
@@ -145,11 +163,6 @@ def research_installer_tool(software_name: str) -> str:
         return f"Error: Search failed for installation instructions of {software_name}."
 
 
-
-
-
-
-
 tools = [
     {
         "name": "execute_system_command",
@@ -172,7 +185,7 @@ tools = [
             },
             "required": ["software_name"]
         }
-    },
+    }
 ]
 
 tools_names = [tool["name"] for tool in tools]
