@@ -4,12 +4,13 @@ from multiprocessing.connection import Listener
 import tempfile
 import os
 
-from commands import handleDownloadFileCommand, handleRunProcess, handleAddToPath
+from commands import handleDownloadFileCommand, handleRunProcess, handleAddToPath, handleChocolateyInstallCommand
 
 COMMANDS = {
-    "DownloadFile": handleDownloadFileCommand,
-    "RunProcess": handleRunProcess,
-    "AddToPath": handleAddToPath
+    # "DownloadFile": handleDownloadFileCommand,
+    # "RunProcess": handleRunProcess,
+    # "AddToPath": handleAddToPath,
+    "ChocoInstall": handleChocolateyInstallCommand
 }
 
 address = ('localhost', 21973)

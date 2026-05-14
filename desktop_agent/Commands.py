@@ -126,3 +126,19 @@ def handleAddToPath(args):
     )
 
     logging.info(f"Added to SYSTEM PATH: {new_path}")
+
+def handleChocolateyInstallCommand(args):
+    package_name = args.get("PackageName")
+    try:
+        result = subprocess.run(
+            ["choco", "install", package_name, "-y"],
+            check=True,
+            capture_output=True,
+            text=True,
+            shell=True
+        )
+        logging.info(f"Chocolatey install output: {result.stdout}")
+        return True
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Chocolatey install failed: {e.stderr}")
+        return False
