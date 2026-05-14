@@ -26,9 +26,22 @@ def handleDownloadFileCommand(args):
         logging.error(f"Failed to download {URL} to {save_path}: {e}")
         return False
 
+ALLOWED_COMMANDS = [
+    "pip install",
+    "npm install",
+    "choco install"
+]
+
 def handleRunProcess(args):
     command = args.get("Command")
     outputValidator = args.get("OutputValidator")
+    validate_command = any(command.lower().startswith(ac) for ac in ALLOWED_COMMANDS)
+    if not validate_command:
+        logging.error(f"Command '{command}' is not allowed.")
+        return False
+    if command.lower().startswith("choco install"):
+        if not command.lower().endswith(" -y"):
+            command += " -y"
     try:
         # Run the command and capture both stdout and stderr
         result = subprocess.run(command, 
@@ -36,7 +49,7 @@ def handleRunProcess(args):
                                 capture_output=True, 
                                 text=True, 
                                 shell=True)
-        
+
         # Combine output streams for comprehensive validation
         full_output = (result.stdout + result.stderr).strip()
         logging.info(f"Command Output: {result.stdout}")
@@ -46,16 +59,16 @@ def handleRunProcess(args):
             # re.IGNORECASE makes it more robust against minor CLI variations
             if re.search(outputValidator, full_output, re.IGNORECASE | re.DOTALL):
                 logging.info(f"Validation passed for: {outputValidator}")
-                return True
+                return full_output
             else:
                 logging.warning(f"Validation failed. Pattern '{outputValidator}' not found.")
-                return False
+                return ""
         
-        return True # Success if no validator was provided
+        return full_output # Success if no validator was provided
 
     except subprocess.CalledProcessError as e:
         logging.error(f"Execution failed: {e.stderr}")
-        return False
+        return ""
 
 def handleAddToPath(args):
     """

@@ -1,11 +1,10 @@
 from src.graph import print_event, build_graph
 
-
 def main():
     app = build_graph()
 
     initial_state = {
-        "task" : "dowanload canvas, python 3.12, and git",
+        "task" : "dowanload canva, filezilla",
         "to_install": [],
         "installation_guides": {},
         "messages": [],
