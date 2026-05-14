@@ -1,14 +1,16 @@
 from langgraph.types import Command
 from langchain_core.messages import HumanMessage
-from src.graph import app
+from src.graph import print_event, build_graph
 
-config = {"configurable": {"thread_id": "session-1"}}
+def main():
+    app = build_graph()
 
-print("Hi! Tell me what you want to set up or what you're trying to do.")
-user_input = input("You: ")
+    print("Hi! Tell me what you want to set up or what you're trying to do.")
+    user_input = input("You: ")
 
-app.invoke(
-    {
+    config = {"configurable": {"thread_id": "session-1"}}
+
+    initial_state = {
         "task": "",
         "to_install": [],
         "interpreter_ready": False,
@@ -19,21 +21,24 @@ app.invoke(
         "chosen_main_app": "",
         "side_tools": [],
         "web_options": [],
+        "installation_guides": {},
+        "installation_messages": [],
         "messages": [HumanMessage(content=user_input)],
-    },
-    config,
-)
+    }
 
-while True:
-    graph_state = app.get_state(config)
-    if not graph_state.next:
-        break
-    user_reply = input("You: ")
-    app.invoke(Command(resume=user_reply), config)
+    print("=== Starting installation run ===\n")
 
-final = app.get_state(config).values
-print("\n── Final installation list ──────────────────")
-for item in final.get("to_install", []):
-    print(f"  • {item}")
-if not final.get("to_install"):
-    print("  (no installation needed — web-based solution)")
+    for event in app.stream(initial_state, {**config, "recursion_limit": 50}):
+        print_event(event)
+
+    while True:
+        graph_state = app.get_state(config)
+        if not graph_state.next:
+            break
+        user_reply = input("You: ")
+        app.invoke(Command(resume=user_reply), config)
+
+    print("\n=== Installation run complete ===")
+
+if __name__ == "__main__":
+    main()
