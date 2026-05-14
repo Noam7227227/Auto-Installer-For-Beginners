@@ -1,4 +1,4 @@
 .env
 __pycache__
-desktop-agent/agent.log
+desktop_agent/agent.log
 src/__pycache__
