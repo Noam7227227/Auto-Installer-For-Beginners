@@ -1,25 +1,26 @@
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
 
-from src.nodes import install_filler, software_installer_node, lc_tools
+from src.nodes import install_filler, research_installer, software_installer_node, lc_tools
 from src.state import AgentState
 
 
 def build_graph():
     workflow = StateGraph(AgentState)
     workflow.add_node("installer_filler", install_filler)
+    workflow.add_node("download_researcher", research_installer)
     workflow.add_node("installer", software_installer_node)
     workflow.add_node("tools", ToolNode(lc_tools))
-
+    
     workflow.set_entry_point("installer_filler")
-    workflow.add_edge("installer_filler", "installer")
+    workflow.add_edge("installer_filler", "download_researcher")
+    workflow.add_edge("download_researcher", "installer")
     workflow.add_conditional_edges("installer", tools_condition)
     workflow.add_edge("tools", "installer")
-
     return workflow.compile()
 
 
-def _print_event(event: dict):
+def print_event(event: dict):
     """Pretty-print streaming updates from the graph, including state changes."""
     for node_name, node_update in event.items():
         print(f"\n--- Node: {node_name} ---")

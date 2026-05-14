@@ -1,4 +1,13 @@
-import typing
+from urllib.parse import urljoin
+
+from bs4 import BeautifulSoup
+import requests
+from tavily import TavilyClient
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+_tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
 
 def execute_system_command(command: str) -> str:
     """
@@ -32,30 +41,111 @@ def download_from_link(url: str, destination_path: str) -> str:
     print(f"[MOCK EXECUTION] Downloading from {url} to {destination_path}")
     return f"Success: Downloaded file from {url} to {destination_path} (Mock)."
 
-def brave_search(query: str) -> str:
+def download_link_search(software_name: str) -> str:
     """
-    Searches the internet to find download links, documentation, or software information.
+    Searches the internet using Tavily to find the official download link for a specific software.
     
     Args:
-        query: The search terms (e.g., 'official download link for Git Windows')
+        software_name: The name of the software to find (e.g., 'Git', 'Python 3.12', 'VS Code')
     """
-    # This simulates a search engine returning a result
-    print(f"[MOCK SEARCH] Searching for: {query}")
+    print(f"[SEARCHING] Finding official download link for: {software_name}...")
     
-    # Simple logic to make the mock feel "real"
-    mock_links = {
-        "git": "https://git-scm.com/download/win",
-        "python": "https://www.python.org/downloads/",
-        "vscode": "https://code.visualstudio.com/download",
-        "node": "https://nodejs.org/en/download/"
-    }
+    # Constructing a specific query helps Tavily find the "direct" link
+    query = f"official download link for {software_name} for Windows"
     
-    # Try to find a match in our mock dictionary, otherwise return a generic link
-    for key in mock_links:
-        if key in query.lower():
-            return mock_links[key]
+    try:
+        # We use search_depth="advanced" to get more reliable results for technical links
+        search_result = _tavily.search(query=query, search_depth="advanced", max_results=10)
+        
+        # Look for the most relevant result
+        if search_result and "results" in search_result:
+            for result in search_result["results"]:
+                url = result.get("url", "")
+                
+                # Simple logic to prioritize "official" looking domains
+                # You can expand this list as needed
+                if any(ext in url.lower() for ext in [".exe", ".msi", "download", "release"]):
+                    print(f"[FOUND] Official link identified: {url}")
+                    return url
             
-    return "https://example.com/software-download-link"
+            # If no direct file link, return the top result
+            top_url = search_result["results"][0]["url"]
+            print(f"[FOUND] Best available link: {top_url}")
+
+            return installation_url
+            
+        print(f"[NOT FOUND] No reliable links found for {software_name}.")
+        return f"Error: Could not find an official download link for {software_name}."
+
+    except Exception as e:
+        print(f"[ERROR] Tavily search failed: {e}")
+        return f"Error: Search failed for {software_name}."
+
+def choco_command_search(software_name: str) -> str:
+    """
+    Searches the internet using Tavily to find the correct choco install command for a given software, if it exists.
+    
+    Args:
+        software_name: The name of the software to find (e.g., 'Git', 'Python 3.12', 'VS Code')
+    """
+    
+    # Constructing a specific query helps Tavily find the "direct" link
+    query = f"official choco install command for {software_name} for Windows"
+    
+    try:
+        # We use search_depth="advanced" to get more reliable results for technical links
+        search_result = _tavily.search(query=query, search_depth="advanced", max_results=10)
+        
+        if search_result and "results" in search_result:
+            for result in search_result["results"]:
+                url = result.get("url", "")
+                
+                # Simple logic to prioritize "official" looking domains
+                # You can expand this list as needed
+                if "chocolatey.org" in url.lower():
+                    print(f"[FOUND] Official Chocolatey command identified: {url}")
+                    return url
+            
+            # If no direct command link, return the top result
+            top_url = search_result["results"][0]["url"]
+            print(f"[FOUND] Best available link: {top_url}")
+
+            return top_url
+    except Exception as e:
+        print(f"[ERROR] Tavily search failed: {e}")
+        return f"Error: Search failed for {software_name}."
+
+
+def research_installer_tool(software_name: str) -> str:
+    """
+    Uses Tavily to research the installation process for a given software.
+    
+    Args:
+        software_name: The name of the software to research (e.g., 'Git', 'Python 3.12', 'VS Code')
+    """
+    print(f"[RESEARCHING] Finding installation instructions for: {software_name}...")
+    
+    query = f"how to install {software_name} on Windows"
+    
+    try:
+        search_result = _tavily.search(query=query, search_depth="advanced", max_results=5)
+        
+        if search_result and "results" in search_result:
+            instructions = []
+            for result in search_result["results"]:
+                title = result.get("title", "")
+                url = result.get("url", "")
+                instructions.append(f"{title}: {url}")
+            
+            print(f"[FOUND] Installation instructions found for {software_name}.")
+            return "\n".join(instructions)
+        
+        print(f"[NOT FOUND] No installation instructions found for {software_name}.")
+        return f"Error: Could not find installation instructions for {software_name}."
+
+    except Exception as e:
+        print(f"[ERROR] Tavily search failed: {e}")
+        return f"Error: Search failed for installation instructions of {software_name}."
 
 tools = [
     {
@@ -94,14 +184,25 @@ tools = [
         }
     },
     {
-        "name": "brave_search",
+        "name": "download_link_search",
         "description": "Searches the internet to find download links, documentation, or software information.",
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "The search terms to look up."}
+                "software_name": {"type": "string", "description": "The name of the software to search for."}
             },
-            "required": ["query"]
+            "required": ["software_name"]
+        }
+    },
+    {
+        "name": "choco_command_search",
+        "description": "Searches for Chocolatey package commands to install software.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "software_name": {"type": "string", "description": "The name of the software to search for."}
+            },
+            "required": ["software_name"]
         }
     }
 ]
