@@ -11,7 +11,11 @@ def handle(msg):
         return
     recipe_name = msg["recipe_name"]
     logging.info(f"Received message for recipe: {recipe_name}")
-    # TODO - handle according to type
+    if "script" not in msg:
+        logging.warning("Received message without 'script' field")
+        return
+    for step in msg["script"]:
+        pass # TODO - handle step according to type
 
 def init_logging():
     logging.basicConfig(
