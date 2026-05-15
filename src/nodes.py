@@ -3,32 +3,30 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.tools import StructuredTool
-from tavily import TavilyClient
 from pydantic import BaseModel, Field
-import os
 from dotenv import load_dotenv
 
 from src.state import AgentState, installation_list, InterpreterOutput, MainAppSuggestions, SideToolSuggestions
 from src.tools import (
     research_installer_tool,
     tools,
+    tools_names,
     execute_system_command,
-    set_env_variable,
-    download_from_link,
-    download_link_search,
     choco_command_search,
 )
 
 load_dotenv()
-llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
 
-# Wrap the mock functions as LangChain tools so a ToolNode can execute them.
-# We do NOT modify the original functions or the `tools` schema list.
+#from langchain_openrouter import ChatOpenRouter
+#llm = ChatOpenRouter(
+#    model="anthropic/claude-sonnet-4.6",
+#    temperature=0.8,
+#)
+###
+llm = ChatGroq(model="llama-3.1-8b-instant")
+
 _FN_MAP = {
     "execute_system_command": execute_system_command,
-    "set_env_variable": set_env_variable,
-    "download_from_link": download_from_link,
-    "download_link_search": download_link_search,
     "choco_command_search": choco_command_search,
 }
 
@@ -48,22 +46,17 @@ INSTALLER_SYSTEM_PROMPT = """SYSTEM MESSAGE:
 You are an expert System Automation Agent. Your goal is to install softwares by following the provided Research Guides exactly.
 
 TOOLS AVAILABLE:
-- download_link_search: Use this to find a direct URL if the guide mentions a download.
-- download_from_link: Use this to save a file to the local disk.
 - execute_system_command: Use this to run installers (.exe, .msi) or shell commands (pip, npm, winget).
-- set_env_variable: Use this if the guide mentions updating the PATH or specific variables.
 - choco_command_search: Use this to find Chocolatey package commands for installing software.
 
 INSTRUCTIONS:
 1. Review the `installation_guides` provided in the state for each software.
 2. DECIDE the path based on the guide:
-   - IF THE GUIDE SAYS to use a command (e.g., pip, npm, winget) or to use Chocolatey:
+   - IF THE GUIDE SAYS to use a command (e.g., pip, npm, winget):
      * Call `execute_system_command` immediately with the suggested command.
-   - IF THE GUIDE SAYS "DOWNLOAD AND RUN":
-     * Call `download_link_search` to find the official link.
-     * Call `download_from_link` to download the file.
-     * Call `execute_system_command` to run the installer silently (e.g., /S or /silent flags).
-3. If the guide mentions environment variables, call `set_env_variable` as the final step.
+    - IF THE GUIDE SAYS TO USE CHOCOLATEY:
+      * Call `choco_command_search` with the software name to get the install command.
+      * THEN call `execute_system_command` with the Chocolatey command.
 
 TOOL-CALL SYNTAX RULES (CRITICAL — follow exactly):
 - Emit tool calls ONLY through the structured tool_calls interface. Never paste raw JSON into the assistant text.
@@ -101,7 +94,7 @@ def research_installer(state: AgentState):
         
         # 2. Use the LLM to summarize the raw links into a clean instruction
         prompt = (
-            f"I found the following information for installing {software} on Windows with Chocolatey:\n"
+            f"I found the following information for installing {software} on Windows with Command tools or Chocolatey:\n"
             f"{raw_results}\n\n"
             "Please summarize this into a clear, 1-2 sentence installation guide. "
             "Tell me if I should search for a chocolatey package command or a command like 'pip' or 'npm'."
@@ -122,30 +115,38 @@ def software_installer_node(state: AgentState):
     On the first turn it seeds the conversation with the system prompt and the
     install list; on later turns it just continues from the running message history.
     """
-    software_list = state.get("to_install", []) or state.get("software_list", [])
-    
-    guides_str = str(state.get("installation_guides", {}))
-    software_str = ", ".join(software_list)
+    messages = state.get("messages", []) or []
+    has_seed = any(isinstance(m, SystemMessage) for m in messages)
 
-    system_content = INSTALLER_SYSTEM_PROMPT.replace(
-        "{to_install}", software_str
-    ).replace(
-        "{installation_guides}", guides_str
-    )
+    if not has_seed:
+        software_list = state.get("to_install", []) or state.get("software_list", [])
 
-    seed = [
-        SystemMessage(content=system_content),
-        HumanMessage(
-            content=(
-                "Please install the following software, one at a time, using the tools: "
-                f"{', '.join(software_list)}."
-            )
-        ),
-    ]
-    response = llm_with_tools.invoke(seed)
-    return {"messages": seed + [response]}
+        guides_str = str(state.get("installation_guides", {}))
+        software_str = ", ".join(software_list)
 
-    
+        system_content = INSTALLER_SYSTEM_PROMPT.replace(
+            "{to_install}", software_str
+        ).replace(
+            "{installation_guides}", guides_str
+        )
+
+        seed = [
+            SystemMessage(content=system_content),
+            HumanMessage(
+                content=(
+                    "Please install the following software, one at a time, using the tools: "
+                    f"{tools_names}."
+                )
+            ),
+        ]
+        response = llm_with_tools.invoke(seed)
+        return {"messages": seed + [response]}
+
+    response = llm_with_tools.invoke(messages)
+    return {"messages": [response]}
+
+
+
 def _get_content(m) -> str:
     return m.content if hasattr(m, "content") else m["content"]
 

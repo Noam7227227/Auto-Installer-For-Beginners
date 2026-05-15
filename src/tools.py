@@ -163,9 +163,6 @@ def research_installer_tool(software_name: str) -> str:
         return f"Error: Search failed for installation instructions of {software_name}."
 
 
-
-
-
 tools = [
     {
         "name": "execute_system_command",
@@ -176,41 +173,6 @@ tools = [
                 "command": {"type": "string", "description": "The command to run."}
             },
             "required": ["command"]
-        }
-    },
-    {
-        "name": "set_env_variable",
-        "description": "Creates or updates an environment variable.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "key": {"type": "string", "description": "The variable name."},
-                "value": {"type": "string", "description": "The variable value."}
-            },
-            "required": ["key", "value"]
-        }
-    },
-    {
-        "name": "download_from_link",
-        "description": "Downloads a program or file from a URL to a local destination.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "url": {"type": "string", "description": "The source URL."},
-                "destination_path": {"type": "string", "description": "The local path to save the file."}
-            },
-            "required": ["url", "destination_path"]
-        }
-    },
-    {
-        "name": "download_link_search",
-        "description": "Searches the internet to find download links, documentation, or software information.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "software_name": {"type": "string", "description": "The name of the software to search for."}
-            },
-            "required": ["software_name"]
         }
     },
     {
