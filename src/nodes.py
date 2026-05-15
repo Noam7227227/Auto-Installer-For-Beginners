@@ -24,7 +24,7 @@ load_dotenv()
 #    temperature=0.8,
 #)
 ###
-llm = ChatGroq(model="llama-3.1-8b-instant")
+llm = ChatGroq(model="llama-3.3-70b-versatile")
 
 _FN_MAP = {
     "execute_system_command": execute_system_command,
@@ -99,6 +99,7 @@ def research_installer(state: AgentState):
             f"{raw_results}\n\n"
             "Please summarize this into a clear, 1-2 sentence installation guide. "
             "Tell me if I should search for a chocolatey package command or a command like 'pip' or 'npm'."
+            "if it is possible to install with chocolatey, prioritize that"
         )
         
         # We invoke the LLM normally (no tools needed) to process the search text

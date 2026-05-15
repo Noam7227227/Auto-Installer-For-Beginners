@@ -35,7 +35,6 @@ def build_graph():
     workflow.add_node("human_confirms_side_tools", human_confirms_side_tools)
 
     workflow.set_entry_point("interpreter")
-    workflow.add_node("installer_filler", install_filler)
     workflow.add_node("download_researcher", research_installer)
     workflow.add_node("installer", software_installer_node)
     workflow.add_node("tools", ToolNode(lc_tools))
@@ -60,27 +59,26 @@ def build_graph():
     return workflow.compile(checkpointer=MemorySaver())
 
 def print_event(event: dict):
-    """Pretty-print streaming updates from the graph, including state changes."""
-    for node_name, node_update in event.items():
-        print(f"\n--- Node: {node_name} ---")
-        
-        # 1. Print state updates (excluding messages for now)
-        if isinstance(node_update, dict):
-            for key, value in node_update.items():
-                if key != "messages":
-                    print(f"[State Update] {key}: {value}")
-
-        # 2. Print messages (AI thoughts and Tool outputs)
-        msgs = node_update.get("messages", []) if isinstance(node_update, dict) else []
+    """Prints only AI messages, tool calls, and tool results."""
+    for node_update in event.values():
+        # Ensure we're looking at a dictionary with a messages key
+        if not isinstance(node_update, dict):
+            continue
+            
+        msgs = node_update.get("messages", [])
         for msg in msgs:
             mtype = type(msg).__name__
 
             if mtype == "AIMessage":
+                # 1. Print the intent to call a tool
                 if getattr(msg, "tool_calls", None):
                     for tc in msg.tool_calls:
-                        print(f"[AI -> tool] {tc['name']}({tc['args']})")
+                        print(f"🛠️  [Tool Call] {tc['name']}({tc['args']})")
+                
+                # 2. Print what the AI is actually saying to the user
                 if msg.content:
-                    print(f"[AI says] {msg.content}")
+                    print(f"🤖 [AI] {msg.content}")
 
             elif mtype == "ToolMessage":
-                print(f"[Tool '{msg.name}' returned] {msg.content}")
+                # 3. Print the result coming back from your system commands
+                print(f"💾 [Tool Result] {msg.content}")
