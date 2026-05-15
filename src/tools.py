@@ -142,7 +142,7 @@ def research_installer_tool(software_name: str) -> str:
     """
     ui_log(f"[RESEARCHING] Finding installation instructions for: {software_name}...")
     
-    query = f"how to install {software_name} on Windows using command line tools or chocolatey?"
+    query = f"how to install {software_name} on Windows using chocolatey (preferred) or pip/npm in the case of a library?"
     
     try:
         search_result = _tavily.search(query=query, search_depth="advanced", max_results=5)
