@@ -16,12 +16,14 @@ from src.tools import (
 )
 
 load_dotenv()
-from langchain_openrouter import ChatOpenRouter
-llm = ChatOpenRouter(
-    model="anthropic/claude-sonnet-4.6",
-    temperature=0.8,
-)
-#llm = ChatGroq(model="llama-3.1-8b-instant")
+
+#from langchain_openrouter import ChatOpenRouter
+#llm = ChatOpenRouter(
+#    model="anthropic/claude-sonnet-4.6",
+#    temperature=0.8,
+#)
+###
+llm = ChatGroq(model="llama-3.1-8b-instant")
 
 _FN_MAP = {
     "execute_system_command": execute_system_command,
