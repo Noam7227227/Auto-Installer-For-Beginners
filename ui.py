@@ -76,13 +76,11 @@ st.iframe(src=f"data:text/html;charset=utf-8,{encoded_html}", height=1)
 # --- THE "NUCLEAR" CSS FIX ---
 st.markdown("""
 <style>
-    /* 1. ANIMATION LAYER */
     iframe {
         position: fixed; top: 0; left: 0; width: 100vw !important; height: 100vh !important;
         z-index: -1; border: none; pointer-events: none; opacity: 0.2;
     }
 
-    /* 2. GLOBAL TRANSPARENCY - TARGETING EVERY POSSIBLE LAYER */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMainViewContainer"],
     [data-testid="stHeader"], [data-testid="stToolbar"], .main, footer,
     [data-testid="stBottom"], [data-testid="stBottomBlockContainer"],
@@ -93,19 +91,28 @@ st.markdown("""
         box-shadow: none !important;
     }
 
-    /* 3. FORCE BODY BLACK (In case of flicker) */
     body { background-color: #000000 !important; }
 
-    /* 4. TERMINAL TEXT */
     .stMarkdown p, h1, h2, h3, label, .stChatMessage p {
         color: #39FF14 !important;
         text-shadow: 0 0 5px rgba(57, 255, 20, 0.8);
         font-family: 'Courier New', monospace !important;
     }
+    
+    ul, li, strong, b, em, i, span {
+        color: #39FF14 !important;
+        text-shadow: 0 0 5px rgba(57, 255, 20, 0.8) !important;
+    }
 
+    li::marker {
+        color: #39FF14 !important;
+        text-shadow: 0 0 5px rgba(57, 255, 20, 0.8) !important;
+    }
+    
     [data-testid="stSidebar"] {
-        background-color: rgba(0, 0, 0, 0.9) !important;
+        background-color: #000000 !important; /* Must be solid black, not transparent */
         border-right: 1px solid #39FF14;
+        z-index: 999999 !important; /* Forces sidebar on top of everything */
     }
 
     .stChatMessage {
@@ -152,14 +159,11 @@ with st.sidebar:
     if st.button("> CLEAR_HISTORY", use_container_width=True):
         st.session_state.messages = []
         st.session_state.processing = False
-        st.session_state.logs = []
         st.session_state.graph_app = build_graph()
         st.session_state.graph_started = False
         st.session_state.awaiting_resume = False
         st.session_state.graph_done = False
         st.rerun()
-    for line in st.session_state.logs:
-        st.caption(f"📟 {line}")
 
 # --- MAIN CHAT ---
 col1, col2, col3 = st.columns([1, 4, 1])
