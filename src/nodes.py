@@ -5,7 +5,11 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
-from tavily import tavily
+from tavily import TavilyClient
+import os
+
+load_dotenv()
+tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
 
 from src.state import AgentState, installation_list, InterpreterOutput, MainAppSuggestions, SideToolSuggestions
 from src.tools import (
@@ -24,7 +28,7 @@ load_dotenv()
 #    temperature=0.8,
 #)
 ###
-llm = ChatGroq(model="llama-3.1-8b-instant")
+llm = ChatGroq(model="llama-3.3-70b-versatile")
 
 _FN_MAP = {
     "execute_system_command": execute_system_command,

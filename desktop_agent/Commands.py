@@ -29,7 +29,8 @@ def handleDownloadFileCommand(args):
 ALLOWED_COMMANDS = [
     "pip install",
     "npm install",
-    "choco install"
+    "choco install",
+    "winget install",
 ]
 
 def handleRunProcess(args):

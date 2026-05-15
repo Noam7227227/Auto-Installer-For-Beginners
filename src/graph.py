@@ -61,16 +61,7 @@ def build_graph():
 
 def print_event(event: dict):
     """Pretty-print streaming updates from the graph, including state changes."""
-    for node_name, node_update in event.items():
-        print(f"\n--- Node: {node_name} ---")
-        
-        # 1. Print state updates (excluding messages for now)
-        if isinstance(node_update, dict):
-            for key, value in node_update.items():
-                if key != "messages":
-                    print(f"[State Update] {key}: {value}")
-
-        # 2. Print messages (AI thoughts and Tool outputs)
+    for node_name, node_update in event.items():        
         msgs = node_update.get("messages", []) if isinstance(node_update, dict) else []
         for msg in msgs:
             mtype = type(msg).__name__

@@ -33,7 +33,6 @@ def main():
 
     while True:
         graph_state = app.get_state(config)
-        print(f"\n[Graph State] {graph_state}")
         if not graph_state.next:
             break
         user_reply = input("You: ")
