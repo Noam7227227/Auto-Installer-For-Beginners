@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from tavily import tavily
 
+from src.utils import ui_log
 from src.state import AgentState, installation_list, InterpreterOutput, MainAppSuggestions, SideToolSuggestions
 from src.tools import (
     research_installer_tool,
@@ -104,7 +105,7 @@ def research_installer(state: AgentState):
         
         # We invoke the LLM normally (no tools needed) to process the search text
         response = llm.invoke(prompt)
-        print(state["installation_guides"])
+        ui_log(state["installation_guides"])
         # 3. Store the clean summary
         guides[software] = response.content
         
@@ -217,16 +218,20 @@ Never ask about OS. refined_task format: 'stream and watch movies on Windows' or
             )
             result.refined_task = user_text.strip() + " on Windows"
 
-        print(f"\nAssistant: Got it! Let me find the best options for you.\n")
+        ui_log(f"\nAssistant: Got it! Let me find the best options for you.\n")
+        content_text = (
+            "Got it! Let me find the best options for you.\n\n"
+            f"**Task:** {result.refined_task}"
+        )
         return {
             "interpreter_ready": True,
             "task": result.refined_task,
             "task_type": result.task_type or "consumption",
             "paid_preference": result.paid_preference or "any",
-            "messages": [AIMessage(content=f"Task: {result.refined_task}")],
+            "messages": [AIMessage(content=content_text)],
         }
     else:
-        print(f"\nAssistant: {result.follow_up_question}")
+        ui_log(f"\nAssistant: {result.follow_up_question}")
         return {
             "interpreter_ready": False,
             "messages": [AIMessage(content=result.follow_up_question)],
@@ -286,19 +291,35 @@ Examples of correct matching:
 
 Include the real URL for each option.""")
 
-    print(f"\nThis task is best done online — no installation needed!\n")
-    print("Here are the top websites for you:\n")
+    ui_log(f"\nThis task is best done online — no installation needed!\n")
+    ui_log("Here are the top websites for you:\n")
     for i, opt in enumerate(result.options, 1):
-        print(f"  [{i}] {opt.name}  →  {opt.url}")
-        print(f"      {opt.description}")
-        print(f"      Why: {opt.why_recommended}\n")
+        ui_log(f"  [{i}] {opt.name}  →  {opt.url}")
+        ui_log(f"      {opt.description}")
+        ui_log(f"      Why: {opt.why_recommended}\n")
 
-    print("You can open any of these directly in your browser.")
-    print("\nWould you prefer a desktop app instead? (type 'yes' for desktop app, or press Enter to finish)")
+    ui_log("You can open any of these directly in your browser.")
+    ui_log("\nWould you prefer a desktop app instead? (type 'yes' for desktop app, or press Enter to finish)")
+
+    lines = [
+        "**This task is best done online — no installation needed!**",
+        "",
+        "**Top websites for you:**",
+        "",
+    ]
+    for i, opt in enumerate(result.options, 1):
+        lines.append(f"- **[{i}] {opt.name}** → {opt.url}")
+        lines.append(f"    - {opt.description}")
+        lines.append(f"    - Why: {opt.why_recommended}")
+    lines.append("")
+    lines.append("You can open any of these directly in your browser.")
+    lines.append("")
+    lines.append("Would you prefer a desktop app instead? (type 'yes' for desktop app, or press Enter to finish)")
+    content_text = "\n".join(lines)
 
     return {
         "web_options": [{"name": o.name, "url": o.url, "description": o.description} for o in result.options],
-        "messages": [AIMessage(content="Would you prefer a desktop app instead?")],
+        "messages": [AIMessage(content=content_text)],
     }
 
 # ── human_picks_web_or_desktop ────────────────────────────────────────────────
@@ -314,12 +335,18 @@ def human_picks_web_or_desktop(state: AgentState) -> dict:
 # ── finalize_web ──────────────────────────────────────────────────────────────
 def finalize_web(state: AgentState) -> dict:
     web_options = state.get("web_options", [])
-    print(f"\nAssistant: No installation needed! Open these in your browser:")
+    ui_log(f"\nAssistant: No installation needed! Open these in your browser:")
     for opt in web_options:
-        print(f"  • {opt['name']}: {opt.get('url', '')}")
+        ui_log(f"  • {opt['name']}: {opt.get('url', '')}")
+
+    lines = ["**No installation needed! Open these in your browser:**", ""]
+    for opt in web_options:
+        lines.append(f"- **{opt['name']}**: {opt.get('url', '')}")
+    content_text = "\n".join(lines) if web_options else "Use these web services directly in your browser."
+
     return {
         "to_install": [],
-        "messages": [AIMessage(content="Use these web services directly in your browser.")],
+        "messages": [AIMessage(content=content_text)],
     }
 
 
@@ -328,7 +355,7 @@ def suggest_main_apps(state: AgentState) -> dict:
     paid_pref = state.get("paid_preference") or "any"
     paid_clause = {"free": "free only", "paid": "paid", "any": "free or paid"}.get(paid_pref, "free or paid")
 
-    print(f"\nAssistant: Finding options for: '{task}'...\n")   # debug line
+    ui_log(f"\nAssistant: Finding options for: '{task}'...\n")   # debug line
 
     structured_llm = llm.with_structured_output(MainAppSuggestions)
     result = structured_llm.invoke(f"""I need you to suggest real Windows desktop apps.
@@ -367,12 +394,19 @@ For each app fill in ALL fields with real content:
         fallback = llm.invoke(f"Name the 3 best Windows apps for: {task}. Reply with just the app names, one per line.").content
         names = [line.strip() for line in fallback.strip().split("\n") if line.strip()][:3]
         valid_options = [{"name": n, "description": "", "why": "", "unique": ""} for n in names]
-        print("\nHere are the best options for you:\n")
+        ui_log("\nHere are the best options for you:\n")
         for i, opt in enumerate(valid_options, 1):
-            print(f"  [{i}] {opt['name']}\n")
+            ui_log(f"  [{i}] {opt['name']}\n")
+
+        lines = ["**Here are the best options for you:**", ""]
+        for i, opt in enumerate(valid_options, 1):
+            lines.append(f"- **[{i}] {opt['name']}**")
+        lines.append("")
+        lines.append(f"Which would you like to install? (enter 1{'-' + str(len(valid_options)) if len(valid_options) > 1 else ''})")
+        content_text = "\n".join(lines)
         return {
             "main_app_options": valid_options,
-            "messages": [AIMessage(content=f"Here are {len(valid_options)} options. Which would you like? (enter a number)")],
+            "messages": [AIMessage(content=content_text)],
         }
 
     # Tavily enriches each valid suggestion
@@ -391,12 +425,12 @@ For each app fill in ALL fields with real content:
             "extra": extra,
         })
 
-    print("\nHere are the best options for you:\n")
+    ui_log("\nHere are the best options for you:\n")
     for i, opt in enumerate(enriched_options, 1):
-        print(f"  [{i}] {opt['name']}")
-        print(f"      {opt['description']}")
-        print(f"      Why for you: {opt['why']}")
-        print(f"      Unique advantage: {opt['unique']}\n")
+        ui_log(f"  [{i}] {opt['name']}")
+        ui_log(f"      {opt['description']}")
+        ui_log(f"      Why for you: {opt['why']}")
+        ui_log(f"      Unique advantage: {opt['unique']}\n")
 
     web_note = llm.invoke(
         f"For the task '{task}', is there a useful free website that does the same thing? "
@@ -405,15 +439,32 @@ For each app fill in ALL fields with real content:
     ).content.strip()
 
     if web_note.lower() != "none":
-        print(f"  Tip: {web_note}\n")
+        ui_log(f"  Tip: {web_note}\n")
+
+    lines = ["**Here are the best options for you:**", ""]
+    for i, opt in enumerate(enriched_options, 1):
+        lines.append(f"- **[{i}] {opt['name']}**")
+        if opt.get("description"):
+            lines.append(f"    - {opt['description']}")
+        if opt.get("why"):
+            lines.append(f"    - Why for you: {opt['why']}")
+        if opt.get("unique"):
+            lines.append(f"    - Unique advantage: {opt['unique']}")
+    lines.append("")
+    if web_note.lower() != "none":
+        lines.append(f"_Tip: {web_note}_")
+        lines.append("")
+    n = len(enriched_options)
+    lines.append(f"Which would you like to install? (enter 1{'-' + str(n) if n > 1 else ''})")
+    content_text = "\n".join(lines)
 
     return {
         "main_app_options": enriched_options,
-        "messages": [AIMessage(content=f"Here are {len(enriched_options)} options. Which would you like? (enter a number)")],
+        "messages": [AIMessage(content=content_text)],
     }
     
 def human_picks_main(state: AgentState) -> dict:
-    print("Which would you like to install? (enter 1, 2, or 3)")
+    ui_log("Which would you like to install? (enter 1, 2, or 3)")
     choice = interrupt("waiting_for_main_app_choice")
 
     options = state.get("main_app_options", [])
@@ -423,20 +474,24 @@ def human_picks_main(state: AgentState) -> dict:
     except (ValueError, IndexError):
         chosen = next((o["name"] for o in options if o["name"].lower() in choice.lower()), options[0]["name"])
 
-    print(f"\nAssistant: Great choice! You selected {chosen}.\n")
+    ui_log(f"\nAssistant: Great choice! You selected {chosen}.\n")
     return {
         "chosen_main_app": chosen,
-        "messages": [AIMessage(content=f"Selected: {chosen}")],
+        "messages": [AIMessage(content=f"Great choice! You selected **{chosen}**.")],
     }
 
 
 def finalize_consumption(state: AgentState) -> dict:
     chosen = state["chosen_main_app"]
-    print(f"\nAssistant: Here is your final installation list:")
-    print(f"  • {chosen}")
+    ui_log(f"\nAssistant: Here is your final installation list:")
+    ui_log(f"  • {chosen}")
+    content_text = (
+        "**Here is your final installation list:**\n\n"
+        f"- {chosen}"
+    )
     return {
         "to_install": [chosen],
-        "messages": [AIMessage(content=f"Final list: {chosen}")],
+        "messages": [AIMessage(content=content_text)],
     }
 
 
@@ -453,22 +508,32 @@ Do NOT include {chosen} itself. Only genuinely required tools.
 For each: one sentence on what it does and why it's needed.""")
 
     if not result.tools:
-        print(f"\nAssistant: No additional tools needed alongside {chosen}.\n")
+        ui_log(f"\nAssistant: No additional tools needed alongside {chosen}.\n")
         return {
             "side_tools": [],
-            "messages": [AIMessage(content="No side tools needed.")],
+            "messages": [AIMessage(content=f"No additional tools needed alongside **{chosen}**.")],
         }
 
-    print(f"\nAlong with {chosen}, here are the recommended companion tools:\n")
+    ui_log(f"\nAlong with {chosen}, here are the recommended companion tools:\n")
     for tool in result.tools:
-        print(f"  • {tool.name}")
-        print(f"    {tool.what_it_does}\n")
+        ui_log(f"  • {tool.name}")
+        ui_log(f"    {tool.what_it_does}\n")
 
-    print("Type 'yes' to install all, 'only <name>' to keep specific ones, or 'skip <name>' to remove some.")
+    ui_log("Type 'yes' to install all, 'only <name>' to keep specific ones, or 'skip <name>' to remove some.")
+
+    lines = [
+        f"**Along with {chosen}, here are the recommended companion tools:**",
+        "",
+    ]
+    for tool in result.tools:
+        lines.append(f"- **{tool.name}** — {tool.what_it_does}")
+    lines.append("")
+    lines.append("Type `yes` to install all, `only <name>` to keep specific ones, or `skip <name>` to remove some.")
+    content_text = "\n".join(lines)
 
     return {
         "side_tools": [{"name": t.name, "what_it_does": t.what_it_does} for t in result.tools],
-        "messages": [AIMessage(content="Which side tools would you like?")],
+        "messages": [AIMessage(content=content_text)],
     }
 
 
@@ -477,23 +542,26 @@ def human_confirms_side_tools(state: AgentState) -> dict:
 
     if not side_tools:
         final_list = [state["chosen_main_app"]]
-        print(f"\nAssistant: Final installation list:")
+        ui_log(f"\nAssistant: Final installation list:")
         for item in final_list:
-            print(f"  • {item}")
+            ui_log(f"  • {item}")
+        content_text = "**Final installation list:**\n\n" + "\n".join(f"- {item}" for item in final_list)
         return {
             "to_install": final_list,
-            "messages": [AIMessage(content=f"Final list: {', '.join(final_list)}")],
+            "messages": [AIMessage(content=content_text)],
         }
 
     response = interrupt("waiting_for_side_tools_confirmation")
     confirmed_side = _parse_side_tool_response(response, side_tools)
     final_list = [state["chosen_main_app"]] + confirmed_side
 
-    print(f"\nAssistant: Perfect! Here is your final installation list:")
+    ui_log(f"\nAssistant: Perfect! Here is your final installation list:")
     for item in final_list:
-        print(f"  • {item}")
+        ui_log(f"  • {item}")
+
+    content_text = "**Perfect! Here is your final installation list:**\n\n" + "\n".join(f"- {item}" for item in final_list)
 
     return {
         "to_install": final_list,
-        "messages": [AIMessage(content=f"Final list: {', '.join(final_list)}")],
+        "messages": [AIMessage(content=content_text)],
     }
