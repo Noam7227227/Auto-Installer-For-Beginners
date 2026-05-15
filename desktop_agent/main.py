@@ -43,9 +43,7 @@ def main():
         conn = listener.accept()
         try:
             json_msg = conn.recv()
-            logging.info(f"Received message: {json_msg}")
             msg = loads(json_msg)
-            logging.info(f"Parsed message: {msg}")
             res = handle(msg)
             conn.send(res)
             conn.close()

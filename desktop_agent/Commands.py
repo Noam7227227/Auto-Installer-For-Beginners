@@ -5,6 +5,7 @@ import logging
 import re
 import winreg
 import ctypes
+import shutil
 
 def handleDownloadFileCommand(args):
     URL = args.get("URL")
@@ -29,7 +30,8 @@ def handleDownloadFileCommand(args):
 ALLOWED_COMMANDS = [
     "pip install",
     "npm install",
-    "choco install"
+    "choco install",
+    "winget install",
 ]
 
 def handleRunProcess(args):
@@ -156,3 +158,51 @@ def handleChocolateyInstallCommand(args):
     except subprocess.CalledProcessError as e:
         logging.error(f"Chocolatey install failed: {e.stderr}")
         return False
+
+def checkInstalled(args):
+    raw_name = args.get("app_name", "")
+    if not raw_name:
+        return False
+    
+    # Normalize to lowercase for a case-insensitive but otherwise EXACT match
+    search_term = raw_name.lower()
+
+    # Check the Registry (Standard Apps)
+    registry_paths = [
+        (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
+        (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
+        (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Uninstall")
+    ]
+    
+    for hive, path in registry_paths:
+        try:
+            with winreg.OpenKey(hive, path) as key:
+                for i in range(winreg.QueryInfoKey(key)[0]):
+                    try:
+                        sub_key_name = winreg.EnumKey(key, i)
+                        with winreg.OpenKey(hive, f"{path}\\{sub_key_name}") as sub_key:
+                            display_name, _ = winreg.QueryValueEx(sub_key, "DisplayName")
+                            
+                            # EXACT MATCH CHECK
+                            if display_name.lower() == search_term:
+                                return True
+                    except: continue
+        except: continue
+
+    # Check the PATH (CLI Tools)
+    # shutil.which is already an exact match check
+    if shutil.which(raw_name):
+        return True
+
+    # Check Microsoft Store (Modern Apps)
+    try:
+        # Removed the '*' wildcards to ensure PowerShell looks for the exact name
+        check_store = f'Get-AppxPackage -Name "{raw_name}"'
+        output = subprocess.check_output(["powershell", "-Command", check_store], 
+                                        stderr=subprocess.DEVNULL, text=True)
+        if output.strip():
+            return True
+    except:
+        pass
+
+    return False

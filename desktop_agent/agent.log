@@ -1,3 +1,0 @@
-2026-05-15 02:52:03,053 - INFO - Received message: {"type": "RunProcess", "Command": "choco install pycharm-community -y", "OutputValidator": null}
-2026-05-15 02:52:03,054 - INFO - Parsed message: {'type': 'RunProcess', 'Command': 'choco install pycharm-community -y', 'OutputValidator': None}
-2026-05-15 02:53:17,844 - ERROR - Execution failed: 
