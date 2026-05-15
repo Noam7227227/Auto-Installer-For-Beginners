@@ -1,10 +1,18 @@
 import streamlit as st
 import urllib.parse
+import datetime
+import time
 from src.graph import build_graph
 
 st.set_page_config(page_title="Terminal_Terminal", page_icon="📟", layout="wide")
 
-# --- BACKGROUND ANIMATION (HORIZONTAL BINARY STREAM) ---
+# --- SESSION STATE ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "processing" not in st.session_state:
+    st.session_state.processing = False
+
+# --- BACKGROUND ANIMATION ---
 binary_html = """
 <style>
     body { margin: 0; overflow: hidden; background: black; }
@@ -14,10 +22,8 @@ binary_html = """
 <script>
     const canvas = document.getElementById('binary-canvas');
     const ctx = canvas.getContext('2d');
-
     let rows, cols, binaryData;
     const fontSize = 18;
-
     function init() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -27,21 +33,14 @@ binary_html = """
             Array.from({ length: cols }, () => Math.random() > 0.5 ? "1" : "0").join("")
         );
     }
-
     let frameCount = 0;
     function draw() {
         frameCount++;
-        if (frameCount % 6 !== 0) { 
-            requestAnimationFrame(draw);
-            return;
-        }
-
+        if (frameCount % 6 !== 0) { requestAnimationFrame(draw); return; }
         ctx.fillStyle = "black"; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
         ctx.fillStyle = "#39FF14";
         ctx.font = fontSize + "px monospace";
-
         for (let i = 0; i < rows; i++) {
             if (binaryData[i]) {
                 binaryData[i] = binaryData[i].substring(1) + (Math.random() > 0.5 ? "1" : "0");
@@ -50,98 +49,83 @@ binary_html = """
         }
         requestAnimationFrame(draw);
     }
-
     window.addEventListener('resize', init);
     init();
     draw();
 </script>
 """
-
-# Encode the HTML and set height to 1 to satisfy Streamlit's validation
 encoded_html = urllib.parse.quote(binary_html)
 st.iframe(src=f"data:text/html;charset=utf-8,{encoded_html}", height=1)
 
-# --- HACKER UI STYLING (CSS) ---
+# --- THE "NUCLEAR" CSS FIX ---
 st.markdown("""
 <style>
-    /* Pin the animation iframe to the background */
+    /* 1. ANIMATION LAYER */
     iframe {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw !important;
-        height: 100vh !important;
-        z-index: -1;
-        border: none;
-        pointer-events: none;
-        opacity: 0.2;
+        position: fixed; top: 0; left: 0; width: 100vw !important; height: 100vh !important;
+        z-index: -1; border: none; pointer-events: none; opacity: 0.2;
     }
 
-    /* Force full transparency on Streamlit containers */
+    /* 2. GLOBAL TRANSPARENCY - TARGETING EVERY POSSIBLE LAYER */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMainViewContainer"], 
-    [data-testid="stHeader"], [data-testid="stToolbar"], .main {
+    [data-testid="stHeader"], [data-testid="stToolbar"], .main, footer,
+    [data-testid="stBottom"], [data-testid="stBottomBlockContainer"],
+    .stChatInputContainer, div[class*="st-emotion-cache"] {
         background-color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
-    body {
-        background-color: #000000 !important;
-    }
+    /* 3. FORCE BODY BLACK (In case of flicker) */
+    body { background-color: #000000 !important; }
 
-    /* Terminal Text Styling */
+    /* 4. TERMINAL TEXT */
     .stMarkdown p, h1, h2, h3, label, .stChatMessage p {
         color: #39FF14 !important;
         text-shadow: 0 0 5px rgba(57, 255, 20, 0.8);
         font-family: 'Courier New', monospace !important;
     }
 
-    /* Icon Font Safeguard */
-    [data-testid="stIcon"], .notranslate, [class^="st-icon-"] {
-        font-family: inherit !important;
-        text-shadow: none !important;
-    }
-
-    /* Sidebar terminal look */
     [data-testid="stSidebar"] {
-        background-color: rgba(0, 0, 0, 0.85) !important;
+        background-color: rgba(0, 0, 0, 0.9) !important;
         border-right: 1px solid #39FF14;
     }
 
-    /* Darker Chat Messages */
     .stChatMessage {
-        background: rgba(0, 0, 0, 0.7) !important;
+        background: rgba(0, 0, 0, 0.8) !important;
         border: 1px solid #39FF14 !important;
         border-radius: 8px !important;
     }
 
-    /* Chat Input Styling */
     [data-testid="stChatInput"] {
-        background-color: rgba(0, 0, 0, 0.9) !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-    
-    [data-testid="stChatInput"] textarea {
-        color: #39FF14 !important;
-        border: none !important;
-        box-shadow: none !important;
-        outline: none !important;
+        background-color: transparent !important; /* Hide the outer wrapper */
     }
 
-    /* Neon Green Submit Arrow */
+    [data-testid="stChatInput"] > div {
+        background-color: rgba(15, 15, 15, 0.95) !important;
+        border: 1px solid #39FF14 !important;
+        border-radius: 35px !important; /* Forces the pill shape */
+        box-shadow: 0 0 15px rgba(57, 255, 20, 0.4) !important;
+        padding: 5px !important;
+    }
+
+    /* Ensure the text area itself doesn't have a background */
+    [data-testid="stChatInput"] textarea {
+        background-color: transparent !important;
+        color: #39FF14 !important;
+        font-family: 'Courier New', monospace !important;
+    }
+
     [data-testid="stChatInput"] button {
         background-color: transparent !important;
-        border: none !important;
         color: #39FF14 !important;
-        filter: drop-shadow(0 0 5px rgba(57, 255, 20, 0.8));
+        filter: drop-shadow(0 0 5px #39FF14);
     }
-    
-    [data-testid="stChatInput"] button svg {
-        fill: #39FF14 !important;
-    }
+    [data-testid="stChatInput"] button svg { fill: #39FF14 !important; }
 
-    /* Status Box styling */
-    .stStatus {
-        background-color: rgba(0, 0, 0, 0.8) !important;
+    [data-testid="stStatusWidget"], .stStatus {
+        background-color: rgba(0, 0, 0, 0.9) !important;
         border: 1px solid #39FF14 !important;
     }
 </style>
@@ -152,42 +136,47 @@ with st.sidebar:
     st.title("📟 SYSTEM_CONTROL")
     if st.button("> CLEAR_HISTORY", use_container_width=True):
         st.session_state.messages = []
+        st.session_state.processing = False
         st.rerun()
-    st.divider()
-    st.warning("NOTICE: ADMIN PRIVILEGES REQUIRED")
 
-# --- MAIN CHAT INTERFACE ---
+# --- MAIN CHAT ---
 col1, col2, col3 = st.columns([1, 4, 1])
 
 with col2:
     st.title("USER@AUTO-INSTALLER:~$")
     
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
+    # History
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(f"> {msg['content']}")
 
-    if prompt := st.chat_input("Enter command..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(f"> {prompt}")
+# Input (pinned to bottom)
+if prompt := st.chat_input("Enter command...", disabled=st.session_state.processing):
+    st.session_state.processing = True
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.rerun()
 
+# --- LOGIC ---
+if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+    with col2:
         with st.chat_message("assistant"):
             status = st.status("EXEC_INIT...", expanded=True)
             try:
                 app = build_graph()
-                initial_state = {"task": prompt, "to_install": [], "messages": []}
-                
-                for event in app.stream(initial_state, {"recursion_limit": 50}):
-                    for node_name, node_update in event.items():
+                last_msg = st.session_state.messages[-1]["content"]
+                for event in app.stream({"task": last_msg, "messages": []}):
+                    for node_name, _ in event.items():
                         status.update(label=f"RUNNING: {node_name.upper()}")
                 
                 status.update(label="EXEC_SUCCESS", state="complete", expanded=False)
                 final_text = "✨ DEPLOYMENT_COMPLETE."
                 st.markdown(final_text)
+                
                 st.session_state.messages.append({"role": "assistant", "content": final_text})
+                st.session_state.processing = False
+                st.rerun()
             except Exception as e:
                 status.update(label="EXEC_FAILURE", state="error")
                 st.error(f"ERR: {str(e)}")
+                st.session_state.processing = False
+                
