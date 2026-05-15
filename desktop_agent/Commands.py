@@ -47,7 +47,8 @@ def handleRunProcess(args):
         result = subprocess.run(command, 
                                 check=True, 
                                 capture_output=True, 
-                                text=True, 
+                                text=True,
+                                encoding="utf-8",
                                 shell=True)
 
         # Combine output streams for comprehensive validation
